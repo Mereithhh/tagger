@@ -24,30 +24,19 @@ var rootCmd = &cobra.Command{
 	Long: fmt.Sprintf(`
 	%s
 
-自动打标签工具。可以自动查找当前仓库的所有标签，找到最新的并加一，然后推送上去。
+自动打标签工具，用于自动查找仓库最新标签并递增版本号。
 
-注意：适配的标签格式为：v0.0.1、v0.0.2 这样的。
+用法：tagger [patch|minor|major] [-p <前缀>] [-s <后缀>]
 
-用法：
+参数说明：
+- 版本类型：patch(修订版本)、minor(次版本)、major(主版本)，默认为patch
+- -p：标签前缀，默认为"v"，如：v0.0.1、prod-0.0.1
+- -s：标签后缀，默认为空，如：v0.0.1-dev
 
-tagger  [patch｜minor｜major] [-p <前缀名>] [-s <后缀名>]
-
-PS:第一个参数可以忽略，直接打最小版本。
-比如目前最新的标签是 v0.0.1，用此工具后会变成 v0.0.2，然后推送。
-
-后面的参数可以为 major、minor 或 patch，分别表示主版本、次版本、修订版本。默认为 patch。
-
-可以用来配合触发 CI/CD。
-
--p 参数可以指定前缀名，默认为 v。 可以指定不同的前缀， 比如 prod-0.0.1, prod-0.0.2 这样的。
--s 参数可以指定后缀名，默认为空。 可以指定不同的后缀， 比如 v0.0.1-dev, v0.0.2-dev 这样的。
-
-也可以通过命令设置默认的前后缀
-tagger set-default-prefix <前缀名>
-tagger set-default-suffix <后缀名>
-
-或者得到当前默认的前后缀
-tagger info
+相关命令：
+tagger set-default-prefix <前缀>  设置默认前缀
+tagger set-default-suffix <后缀>  设置默认后缀
+tagger info                       查看当前默认配置
 	`, logo),
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

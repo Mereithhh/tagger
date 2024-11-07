@@ -80,9 +80,14 @@ func GetLatestTag(prefix string, n int, suffix string, tags []string) (string, e
 	// filter tags by prefix
 	newArr := make([]string, 0)
 	for _, tag := range tags {
-		if strings.HasPrefix(tag, prefix) {
+		this_prefix, _, this_suffix,err := GetTagParts(tag)
+		if err != nil {
+			return "", err
+		}
+
+		if this_prefix == prefix {
 			if suffix != "" {
-				if IsSuffixTag(tag, suffix) {
+				if this_suffix == suffix {
 					if IsValidTag(tag) {
 						newArr = append(newArr, tag)
 					}

@@ -160,6 +160,12 @@ func TestGetTagParts(t *testing.T) {
 			wantVersion: "1.2.3",
 			wantSuffix:  "-beta-rc-test",
 		},
+		{
+			name: "复杂前缀",
+			tag: "release20231.0.0",
+			wantPrefix: "release",
+			wantVersion: "20231.0.0",
+		},
 	}
 
 	for _, tt := range tests {
@@ -268,10 +274,19 @@ func TestGetLatestTag(t *testing.T) {
 		{
 			name:     "复杂前缀",
 			mockTags: []string{"release20231.0.0", "release20232.0.0"},
-			prefix:   "release2023",
+			prefix:   "release",
 			n:        0,
 			suffix:   "",
 			want:     "release20233.0.0",
+			wantErr:  false,
+		},
+		{
+			name:     "混合前缀",
+			mockTags: []string{"v-0.0.1"},
+			prefix:   "v",
+			n:        2,
+			suffix:   "",
+			want:     "v0.0.1",
 			wantErr:  false,
 		},
 	}
@@ -304,4 +319,5 @@ func TestGetLatestTag(t *testing.T) {
 		})
 	}
 } 
+
 
