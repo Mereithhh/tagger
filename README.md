@@ -14,6 +14,12 @@
 curl -s https://get.mereith.com/tagger/tagger.sh | sh
 ```
 
+如果你是 windows 用户，请使用 `tagger.ps1` 脚本。
+
+```powershell
+Invoke-WebRequest -Uri https://get.mereith.com/tagger/tagger.ps1 -OutFile tagger.ps1; .\tagger.ps1
+```
+
 > **Mac 用户注意：首次运行请在"系统设置 -> 隐私与安全"中允许应用运行**
 
 ## 使用说明

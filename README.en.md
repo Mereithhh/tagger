@@ -12,6 +12,12 @@ An automated version tag management tool for automatically finding the latest re
 curl -s https://get.mereith.com/tagger/tagger.sh | sh
 ```
 
+If you are a Windows user, please use the `tagger.ps1` script.
+
+```powershell
+Invoke-WebRequest -Uri https://get.mereith.com/tagger/tagger.ps1 -OutFile tagger.ps1; .\tagger.ps1
+```
+
 > **Note for Mac users: For first-time use, please allow the application to run in "System Settings -> Privacy & Security"**
 
 ## Usage
