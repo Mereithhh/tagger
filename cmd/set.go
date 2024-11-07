@@ -37,37 +37,27 @@ var setDefaultSuffixCmd = &cobra.Command{
 	},
 }
 
-var getDefaultPrefixCmd = &cobra.Command{
-	Use:   "get-default-prefix",
-	Short: "获取默认的标签前缀",
-	Long:  "获取默认的标签前缀",
+var getDefaultInfoCmd = &cobra.Command{
+	Use:   "info",
+	Short: "获取默认的标签前缀和后缀",
+	Long:  "获取默认的标签前缀和后缀信息",
 	Run: func(cmd *cobra.Command, args []string) {
 		prefix, err := util.GetDefaultPrefix()
 		if err != nil {
 			fmt.Printf("获取默认前缀失败: %v\n", err)
 			return
 		}
-		fmt.Printf("当前默认前缀为: %s\n", prefix)
-	},
-}
-
-var getDefaultSuffixCmd = &cobra.Command{
-	Use:   "get-default-suffix",
-	Short: "获取默认的标签后缀",
-	Long:  "获取默认的标签后缀",
-	Run: func(cmd *cobra.Command, args []string) {
 		suffix, err := util.GetDefaultSuffix()
 		if err != nil {
 			fmt.Printf("获取默认后缀失败: %v\n", err)
 			return
 		}
-		fmt.Printf("当前默认后缀为: %s\n", suffix)
+		fmt.Printf("当前默认前缀为: %s\n当前默认后缀为: %s\n", prefix, suffix)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(setDefaultPrefixCmd)
 	rootCmd.AddCommand(setDefaultSuffixCmd)
-	rootCmd.AddCommand(getDefaultPrefixCmd)
-	rootCmd.AddCommand(getDefaultSuffixCmd)
+	rootCmd.AddCommand(getDefaultInfoCmd)
 }

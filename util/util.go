@@ -9,11 +9,8 @@ import (
 	"strings"
 )
 
-const TagReg = `^(staging|pre|prod)(-[a-zA-Z0-9]{0,10}){0,1}-\d+\.\d+\.\d+$`
+const TagReg = `^([a-zA-Z0-9_-]*[a-zA-Z_-])?\d+\.\d+\.\d+([a-zA-Z_-][a-zA-Z0-9_-]*)?$`
 
-func PrintInfo() {
-	// fmt.Println("tagger v0.4.0")
-}
 
 func Log(stage string, msg string) {
 	fmt.Println(msg)
@@ -72,17 +69,20 @@ func LoadTags() ([]string, error) {
 	return newArr, nil
 }
 
-func GetLatestTag(mode string, n int, pool string) (string, error) {
-	tags, err := LoadTags()
-	if err != nil {
-		return "", err
+func GetLatestTag(prefix string, n int, suffix string, tags []string) (string, error) {
+	var err error
+	if tags == nil {
+		tags, err = LoadTags()
+		if err != nil {
+			return "", err
+		}
 	}
-	// filter tags by mode
+	// filter tags by prefix
 	newArr := make([]string, 0)
 	for _, tag := range tags {
-		if strings.HasPrefix(tag, mode) {
-			if pool != "" {
-				if IsPoolTag(tag, pool) {
+		if strings.HasPrefix(tag, prefix) {
+			if suffix != "" {
+				if IsSuffixTag(tag, suffix) {
 					if IsValidTag(tag) {
 						newArr = append(newArr, tag)
 					}
@@ -96,40 +96,33 @@ func GetLatestTag(mode string, n int, pool string) (string, error) {
 		}
 	}
 	if len(newArr) == 0 {
-		return AddPoolName(fmt.Sprintf("%s-0.0.1", mode), pool), nil
+		return fmt.Sprintf("%s0.0.1%s", prefix, suffix), nil
 	}
 	big := ""
 	for _, tag := range newArr {
-		if CmpTag(tag, big, mode, n, pool) {
+		if CmpTag(tag, big, prefix, n, suffix) {
 			big = tag
 		}
 	}
-	newTag := AddOneNumber(big, mode, n, pool)
+	newTag := AddOneNumber(big, prefix, n, suffix)
 
-	return AddPoolName(newTag, pool), nil
+	return newTag, nil
 }
 
-func AddPoolName(oldtag string, pool string) string {
-	if pool == "" {
-		return oldtag
-	}
 
-	arr := strings.Split(oldtag, "-")
-	return fmt.Sprintf("%s-%s-%s", arr[0], pool, arr[1])
 
-}
-
-func CmpTag(tag1, tag2, mode string, n int, pool string) bool {
+func CmpTag(tag1, tag2, prefix string, n int, suffix string) bool {
 	if tag2 == "" {
 		return true
 	}
-	t1 := strings.TrimPrefix(tag1, fmt.Sprintf("%s-", mode))
-	t2 := strings.TrimPrefix(tag2, fmt.Sprintf("%s-", mode))
+	t1 := strings.TrimPrefix(tag1, fmt.Sprintf("%s", prefix))
+	t2 := strings.TrimPrefix(tag2, fmt.Sprintf("%s", prefix))
 
-	if pool != "" {
-		t1 = strings.TrimPrefix(t1, fmt.Sprintf("%s-", pool))
-		t2 = strings.TrimPrefix(t2, fmt.Sprintf("%s-", pool))
+	if suffix != "" {
+		t1 = strings.TrimSuffix(t1, fmt.Sprintf("%s", suffix))
+		t2 = strings.TrimSuffix(t2, fmt.Sprintf("%s", suffix))
 	}
+
 
 	t1StringArr := strings.Split(t1, ".")
 	t2StringArr := strings.Split(t2, ".")
@@ -146,10 +139,10 @@ func CmpTag(tag1, tag2, mode string, n int, pool string) bool {
 
 }
 
-func AddOneNumber(tag, mode string, n int, pool string) string {
-	t := strings.TrimPrefix(tag, fmt.Sprintf("%s-", mode))
-	if pool != "" {
-		t = strings.TrimPrefix(t, fmt.Sprintf("%s-", pool))
+func AddOneNumber(tag, prefix string, n int, suffix string) string {
+	t := strings.TrimPrefix(tag, fmt.Sprintf("%s", prefix))
+	if suffix != "" {
+		t = strings.TrimSuffix(t, fmt.Sprintf("%s", suffix))
 	}
 	tStringArr := strings.Split(t, ".")
 	tNumberArr := make([]int, 0)
@@ -158,7 +151,10 @@ func AddOneNumber(tag, mode string, n int, pool string) string {
 		tNumberArr = append(tNumberArr, num)
 	}
 	tNumberArr[n] += 1
-	newTag := fmt.Sprintf("%s-%d.%d.%d", mode, tNumberArr[0], tNumberArr[1], tNumberArr[2])
+	newTag := fmt.Sprintf("%s%d.%d.%d", prefix, tNumberArr[0], tNumberArr[1], tNumberArr[2])
+	if suffix != "" {
+		newTag = fmt.Sprintf("%s%s", newTag, suffix)
+	}
 	return newTag
 }
 
@@ -191,7 +187,6 @@ func TagByModeVersion(prefix string, version string, suffix string) {
 		}
 	}()
 
-	PrintInfo()
 	fmt.Printf("=== 标签生成信息 ===\n")
 	if suffix != "" {
 		fmt.Printf("后缀: %s\n", suffix)
@@ -214,7 +209,7 @@ func TagByModeVersion(prefix string, version string, suffix string) {
 	// fmt.Println("[获取标签信息] 开始")
 
 	n := GetNByVersion(version)
-	newTag, err := GetLatestTag(prefix, n, suffix)
+	newTag, err := GetLatestTag(prefix, n, suffix,nil )
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -240,17 +235,66 @@ func IsValidTag(tag string) bool {
 
 }
 
-func GetTagPool(tag string) string {
+func GetTagSuffix(tag string) string {
 	if !IsValidTag(tag) {
 		return ""
 	}
-	arr := strings.Split(tag, "-")
-	if len(arr) != 3 {
+	// 使用正则表达式匹配版本号部分
+	versionRegex := regexp.MustCompile(`\d+\.\d+\.\d+(-[a-zA-Z0-9_]+)?$`)
+	versionPart := versionRegex.FindString(tag)
+	if versionPart == "" {
 		return ""
 	}
-	return arr[1]
+
+	// 去掉版本号部分
+	prefix := strings.TrimSuffix(tag, versionPart)
+	// 去掉前缀和最后的分隔符（如果存在）
+	if prefix == "" {
+		return ""
+	}
+	prefix = strings.TrimRight(prefix, "-_")
+
+	// 如果前缀包含分隔符，取最后一个分段作为 suffix
+	parts := regexp.MustCompile(`[-_]`).Split(prefix, -1)
+	if len(parts) > 1 {
+		return parts[len(parts)-1]
+	}
+	
+	return ""
 }
 
-func IsPoolTag(tag string, pool string) bool {
-	return GetTagPool(tag) == pool
+func IsSuffixTag(tag string, suffix string) bool {
+	_, _, suffix, err := GetTagParts(tag)
+	if err != nil {
+		return false
+	}
+	return suffix == suffix
 }
+
+// GetTagParts 从标签中提取前缀、版本号和后缀
+// 返回值: 前缀(可能为空), 版本号, 后缀(可能为空), 错误信息
+func GetTagParts(tag string) (prefix string, version string, suffix string, err error) {
+	if !IsValidTag(tag) {
+		return "", "", "", fmt.Errorf("invalid tag format: %s", tag)
+	}
+
+	// 使用正则表达式匹配版本号部分
+	versionRegex := regexp.MustCompile(`\d+\.\d+\.\d+`)
+	version = versionRegex.FindString(tag)
+
+	// 分割版本号前后的部分
+	parts := versionRegex.Split(tag, -1)
+	
+	// 处理前缀，保留尾部的连字符
+	if parts[0] != "" {
+		prefix = parts[0]
+	}
+	
+	// 处理后缀，保留头部的连字符
+	if len(parts) > 1 {
+		suffix = parts[1]
+	}
+
+	return prefix, version, suffix, nil
+}
+

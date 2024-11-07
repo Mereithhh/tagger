@@ -47,8 +47,7 @@ tagger set-default-prefix <前缀名>
 tagger set-default-suffix <后缀名>
 
 或者得到当前默认的前后缀
-tagger get-default-prefix
-tagger get-default-suffix
+tagger info
 	`, logo),
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
