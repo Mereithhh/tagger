@@ -4,12 +4,12 @@
 
 > 我会用它来自动打标签来触发流水线。
 
-![](./tagger_pic.gif)
+![](./tagger.gif)
 
 ## 安装
 
 ```bash
-curl -s https://cdn.mereith.com/tagger/tagger.sh | sh
+curl -s https://get.mereith.com/tagger/tagger.sh | sh
 ```
 
 > **Mac 用户注意：首次运行请在"系统设置 -> 隐私与安全"中允许应用运行**
