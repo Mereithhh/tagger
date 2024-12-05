@@ -27,7 +27,7 @@ Invoke-WebRequest -Uri https://get.mereith.com/tagger/tagger.ps1 -OutFile tagger
 基本格式：
 
 ```bash
-tagger [版本类型] [-p <前缀>] [-s <后缀>]
+tagger [版本类型] [-p <前缀>] [-s <后缀>] [-r <远程仓库名>]
 ```
 
 参数说明：
@@ -35,6 +35,7 @@ tagger [版本类型] [-p <前缀>] [-s <后缀>]
 - 版本类型：patch(修订版本，默认) | minor(次版本) | major(主版本)
 - -p：标签前缀，默认为"v"，如：v0.0.1、prod-0.0.1
 - -s：标签后缀，默认为空，如：v0.0.1-dev
+- -r：远程仓库名，默认为"origin"
 
 相关命令：
 

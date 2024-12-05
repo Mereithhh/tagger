@@ -11,7 +11,6 @@ import (
 
 const TagReg = `^([a-zA-Z0-9_-]*[a-zA-Z_-])?\d+\.\d+\.\d+([a-zA-Z_-][a-zA-Z0-9_-]*)?$`
 
-
 func Log(stage string, msg string) {
 	fmt.Println(msg)
 }
@@ -35,12 +34,12 @@ func Fetch() error {
 	return ExecCmd("git", "fetch", "--all", "-f")
 }
 
-func SetTagAndPush(tag string) error {
+func SetTagAndPush(tag string, remote string) error {
 	err := ExecCmd("git", "tag", tag)
 	if err != nil {
 		return err
 	}
-	err = ExecCmd("git", "push", "origin", tag)
+	err = ExecCmd("git", "push", remote, tag)
 	if err != nil {
 		return err
 	}
@@ -80,7 +79,7 @@ func GetLatestTag(prefix string, n int, suffix string, tags []string) (string, e
 	// filter tags by prefix
 	newArr := make([]string, 0)
 	for _, tag := range tags {
-		this_prefix, _, this_suffix,err := GetTagParts(tag)
+		this_prefix, _, this_suffix, err := GetTagParts(tag)
 		if err != nil {
 			return "", err
 		}
@@ -114,8 +113,6 @@ func GetLatestTag(prefix string, n int, suffix string, tags []string) (string, e
 	return newTag, nil
 }
 
-
-
 func CmpTag(tag1, tag2, prefix string, n int, suffix string) bool {
 	if tag2 == "" {
 		return true
@@ -127,7 +124,6 @@ func CmpTag(tag1, tag2, prefix string, n int, suffix string) bool {
 		t1 = strings.TrimSuffix(t1, fmt.Sprintf("%s", suffix))
 		t2 = strings.TrimSuffix(t2, fmt.Sprintf("%s", suffix))
 	}
-
 
 	t1StringArr := strings.Split(t1, ".")
 	t2StringArr := strings.Split(t2, ".")
@@ -184,7 +180,7 @@ func GetNByVersion(version string) int {
 
 }
 
-func TagByModeVersion(prefix string, version string, suffix string) {
+func TagByModeVersion(prefix string, version string, suffix string, remote string) {
 	var err error
 	defer func() {
 		if err != nil {
@@ -198,6 +194,7 @@ func TagByModeVersion(prefix string, version string, suffix string) {
 	}
 	fmt.Printf("前缀: %s\n", prefix)
 	fmt.Printf("版本: %s\n", version)
+	fmt.Printf("远端: %s\n", remote)
 	fmt.Println("====================")
 	// fmt.Println("[同步远端信息] 开始")
 	err = GitPull()
@@ -214,7 +211,7 @@ func TagByModeVersion(prefix string, version string, suffix string) {
 	// fmt.Println("[获取标签信息] 开始")
 
 	n := GetNByVersion(version)
-	newTag, err := GetLatestTag(prefix, n, suffix,nil )
+	newTag, err := GetLatestTag(prefix, n, suffix, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -222,7 +219,7 @@ func TagByModeVersion(prefix string, version string, suffix string) {
 	// fmt.Println("[获取标签信息] 完成")
 	fmt.Println("[要打标签]", newTag)
 	// fmt.Println("[打标签] 开始")
-	err = SetTagAndPush(newTag)
+	err = SetTagAndPush(newTag, remote)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -264,7 +261,7 @@ func GetTagSuffix(tag string) string {
 	if len(parts) > 1 {
 		return parts[len(parts)-1]
 	}
-	
+
 	return ""
 }
 
@@ -289,12 +286,12 @@ func GetTagParts(tag string) (prefix string, version string, suffix string, err 
 
 	// 分割版本号前后的部分
 	parts := versionRegex.Split(tag, -1)
-	
+
 	// 处理前缀，保留尾部的连字符
 	if parts[0] != "" {
 		prefix = parts[0]
 	}
-	
+
 	// 处理后缀，保留头部的连字符
 	if len(parts) > 1 {
 		suffix = parts[1]
@@ -302,4 +299,3 @@ func GetTagParts(tag string) (prefix string, version string, suffix string, err 
 
 	return prefix, version, suffix, nil
 }
-

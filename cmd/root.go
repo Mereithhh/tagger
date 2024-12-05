@@ -16,6 +16,7 @@ import (
 var logo string
 var CurrentPrefix string
 var CurrentSuffix string
+var CurrentRemote string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -26,12 +27,13 @@ var rootCmd = &cobra.Command{
 
 自动打标签工具，用于自动查找仓库最新标签并递增版本号。
 
-用法：tagger [patch|minor|major] [-p <前缀>] [-s <后缀>]
+用法：tagger [patch|minor|major] [-p <前缀>] [-s <后缀>] [-r <远程仓库名>]
 
 参数说明：
 - 版本类型：patch(修订版本)、minor(次版本)、major(主版本)，默认为patch
 - -p：标签前缀，默认为"v"，如：v0.0.1、prod-0.0.1
 - -s：标签后缀，默认为空，如：v0.0.1-dev
+- -r：远程仓库名，默认为"origin"
 
 相关命令：
 tagger set-default-prefix <前缀>  设置默认前缀
@@ -76,7 +78,7 @@ tagger info                       查看当前默认配置
 		}
 
 		// 执行打标签操作
-		util.TagByModeVersion(prefix, mode, suffix)
+		util.TagByModeVersion(prefix, mode, suffix, CurrentRemote)
 	},
 }
 
@@ -96,6 +98,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&CurrentPrefix, "prefix", "p", "", "tag prefix")
 	rootCmd.PersistentFlags().StringVarP(&CurrentSuffix, "suffix", "s", "", "tag suffix")
+	rootCmd.PersistentFlags().StringVarP(&CurrentRemote, "remote", "r", "origin", "git remote name")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

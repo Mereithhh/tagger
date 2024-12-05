@@ -25,7 +25,7 @@ Invoke-WebRequest -Uri https://get.mereith.com/tagger/tagger.ps1 -OutFile tagger
 Basic format:
 
 ```bash
-tagger [version-type] [-p <prefix>] [-s <suffix>]
+tagger [version-type] [-p <prefix>] [-s <suffix>] [-r <remote>]
 ```
 
 Parameters:
@@ -33,6 +33,7 @@ Parameters:
 - version-type: patch(default) | minor | major
 - -p: tag prefix, defaults to "v", e.g., v0.0.1, prod-0.0.1
 - -s: tag suffix, defaults to empty, e.g., v0.0.1-dev
+- -r: git remote name, defaults to "origin"
 
 Related commands:
 
