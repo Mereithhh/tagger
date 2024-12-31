@@ -23,7 +23,16 @@ jobs:
           args: release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-      - name: upload and refreash cdn
+      - name: Install MinIO Client
+        run: |
+          curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+          chmod +x mc
+
+      - name: Configure MinIO Client
+        run: |
+          ./mc alias set myminio ${{ secrets.MINIO_ENDPOINT }} ${{ secrets.MINIO_ACCESS_KEY }} ${{ secrets.MINIO_SECRET_KEY }}
+
+      - name: upload to minio
         run: |
           mkdir upload
           cp dist/tagger_darwin_arm64_v8.0/tagger upload/tagger_darwin_arm64
@@ -34,9 +43,7 @@ jobs:
           cp dist/tagger_linux_amd64_v1/tagger upload/tagger_linux_amd64
           cp cdn_script/tagger.sh upload/tagger.sh
           cp cdn_script/tagger.ps1 upload/tagger.ps1
-          ./qshell account ${{ secrets.QINIU_ACCESS_KEY }} ${{ secrets.QINIU_SECRET_KEY }} mereith
-          ./qshell qupload2 --src-dir ./upload --bucket mereith-get --key-prefix tagger/ --overwrite true
-          ./qshell cdnrefresh --dirs  -i refresh.txt
+          ./mc cp --recursive upload/ myminio/${{ secrets.MINIO_BUCKET }}/tagger/
       - name: 通知
         run: |
           curl -X POST -H "Content-Type: application/json" -d '{"source":"github-ci:tagger","message":"流水线运行完毕。\n版本: ${{ github.ref_name }}" }' ${{ secrets.WEBHOOK_URL }}
