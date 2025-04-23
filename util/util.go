@@ -27,7 +27,7 @@ func ExecCmd(cmd string, args ...string) error {
 }
 
 func GitPull() error {
-	return ExecCmd("git", "pull")
+	return ExecCmd("bash", "-c", "git pull $(git remote | head -n 1) $(git rev-parse --abbrev-ref HEAD)")
 }
 
 func Fetch() error {
